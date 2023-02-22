@@ -1,0 +1,1 @@
+# lazygit-repository-manager
