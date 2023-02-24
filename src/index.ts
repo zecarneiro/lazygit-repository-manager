@@ -7,7 +7,7 @@ import { EOperation } from './enum/Eoperation';
 import { DirectoriesUtils } from '../vendor/utils/typescript/directories-utils';
 import { ConsoleUtils, ICommandInfo } from '../vendor/utils/typescript/console-utils';
 import { FileUtils } from '../vendor/utils/typescript/file-utils';
-import { LoggerUtils } from '../vendor/utils/typescript/logger-utils';
+import { EColor, LoggerUtils } from '../vendor/utils/typescript/logger-utils';
 import { SystemUtils } from '../vendor/utils/typescript/system-utils';
 import { Response } from '../vendor/utils/typescript/entities/response';
 import { FunctionUtils } from '../vendor/utils/typescript/function-utils';
@@ -28,6 +28,10 @@ class LazygitRepositoryManager {
             });
         }
         this.config = FileUtils.readJsonFile<IConfig>(this.CONFIG_FILE_NAME);
+    }
+
+    private logHeader() {
+        LoggerUtils.title('Lazygit Repository Manager');
     }
 
     private updateConfig() {
@@ -117,6 +121,7 @@ class LazygitRepositoryManager {
             }
             this.processAnotherCmd(cmd);
             this.updateConfig();
+            ConsoleUtils.waitUserKeyboardInputSync();
             this.processMenu(true);
         }, this, []);
     }
@@ -126,7 +131,7 @@ class LazygitRepositoryManager {
             this.menu.resetMenu();
         }
         this.menu.customHeader(() => {
-            LoggerUtils.title('Lazygit Repository Manager');
+            this.logHeader();
         });
         this.menu.addDelimiter('*', this.delimiterWithTitle, 'Repositories');
         this.config.data?.forEach((repository) => {
@@ -149,29 +154,33 @@ class LazygitRepositoryManager {
     }
 
     private setUserInfoOnGit() {
-        const maxCount = 5;
-        const process = (isEmail: boolean) => {
-            let count = 0;
+        let info = {
+            username: '',
+            email: '',
+        }
+        this.logHeader();
+        const process = (isEmail: boolean): string => {
+            let userInfo: string;
             const cmd: ICommandInfo = { cmd: isEmail ? 'git config user.email' : 'git config user.name' };
-            while(count < maxCount) {
-                let consoleData = this.consoleUtils.execSync({...cmd, verbose: false});
-                if (consoleData.hasError || !consoleData.data) {
-                    LoggerUtils.warn(`${isEmail ? 'Email' : 'Username'} git info is not configured`);
-                    const userInfo = ConsoleUtils.readKeyboardSync(`Insert ${isEmail ? 'Email' : 'Username'}`, {choices: [], canChoiceBeNull: true});
-                    if (userInfo) {
-                        this.processAnotherCmd({
-                            cmd: isEmail? `git config --global user.email "${userInfo}"` : `git config --global user.name "${userInfo}"`
-                        });
-                    }
-                } else {
-                    break;
+            let consoleData = this.consoleUtils.execSync({...cmd, verbose: false});
+            userInfo = !consoleData.hasError && consoleData.data ? consoleData.data : '';
+            if (!userInfo) {
+                LoggerUtils.warn(`${isEmail ? 'Email' : 'Username'} git info is not configured`);
+                userInfo = ConsoleUtils.readKeyboardSync(`Insert ${isEmail ? 'Email' : 'Username'} [PRESS ENTER TO SKIP]`, {choices: [], canChoiceBeNull: true});
+                if (userInfo) {
+                    this.processAnotherCmd({
+                        cmd: isEmail? `git config --global user.email "${userInfo}"` : `git config --global user.name "${userInfo}"`
+                    });
                 }
-                count++;
             }
+            return userInfo;
         };
-        process(false);
-        process(true);
-        
+        info.username = process(false);
+        info.email = process(true);
+        LoggerUtils.log('Git global user information configured');
+        LoggerUtils.log(`Username: ${LoggerUtils.buildColor(info.username, EColor.green, true)}`);
+        LoggerUtils.log(`Email: ${LoggerUtils.buildColor(info.email, EColor.green, true)}`);
+        ConsoleUtils.waitUserKeyboardInputSync();
     }
 
     public static start() {

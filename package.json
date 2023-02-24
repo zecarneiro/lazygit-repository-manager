@@ -1,6 +1,6 @@
 {
   "name": "lazygit-repository-manager-cli",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Lazygit repository manager, without need to open lazygit on folder",
   "main": "dist/src/index.js",
   "bin": {
@@ -8,12 +8,13 @@
   },
   "scripts": {
     "prepack": "npm run build",
-    "copyOtherFiles": "copyfiles --up --all \"vendor/utils/powershell/**\" \"vendor/utils/bash/**\" \"vendor/utils/scripts-cli/**\" dist",
+    "copyOtherFiles": "copyfiles --up --all \"vendor/utils/powershell/**\" \"vendor/utils/bash/**\" dist",
     "build": "tsc && npm run copyOtherFiles",
     "start": "npm run build && node dist/src/index.js"
   },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "images/**/*"
   ],
   "repository": {
     "type": "git",
