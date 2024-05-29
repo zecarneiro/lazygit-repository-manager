@@ -1,5 +1,5 @@
 $APP_ROOT_DIR = ($PSScriptRoot)
-$APP_ID = "lazygit-repo-manager"
+$APP_ID = "lazygit-repository-manager"
 $APP_NAME = "Lazygit Repo Manager"
 $SCRIPT_SHELL_VENDOR_DIR = "$APP_ROOT_DIR\vendor\powershell-utils"
 

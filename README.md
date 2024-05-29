@@ -10,7 +10,7 @@ You can download the latest version of application zip or run the following comm
 
 1. Install Scoop. For more information visit: https://scoop.sh
 
-`scoop install https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v$APP_LATEST_VERSION/scoop-installer.json`
+`scoop install https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v$APP_LATEST_VERSION/lazygit-repository-manager.json`
 
 ## Application images
 
