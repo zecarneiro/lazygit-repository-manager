@@ -32,7 +32,7 @@ func loadMaxCharRepoRepresentation() {
 func loadTerminalCommand() {
 	if len(config.TerminalCommand) == 0 {
 		if jnoronhautils.IsWindows() {
-			config.TerminalCommand = "start powershell.exe -Command " + COMMAND_KEY
+			config.TerminalCommand = "start /MAX powershell.exe -Command " + COMMAND_KEY
 		}
 	}
 }

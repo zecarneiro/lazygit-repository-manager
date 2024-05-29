@@ -1,8 +1,8 @@
 {
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Lazygit repository management",
   "homepage": "https://github.com/zecarneiro/lazygit-repository-manager",
-  "url": "https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v3.0.2/lazygit-repository-manager-win.zip",
+  "url": "https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v3.0.3/lazygit-repository-manager-win.zip",
   "bin": "lazygit-repository-manager.exe",
   "installer": {
     "script": ["Invoke-Expression \"$dir\\install.ps1\""]

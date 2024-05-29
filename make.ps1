@@ -57,7 +57,7 @@ function _clean() {
     deletedirectory "$RELEASE_DIR"
     deletefile "$MAKE_SCRIPT_DIR\go.sum"
     deletefile "$MAKE_SCRIPT_DIR\go.work.sum"
-    deletefile "$MAKE_SCRIPT_DIR\$BINARY_NAME.zip"
+    deletefile "$MAKE_SCRIPT_DIR\${BINARY_NAME}-win.zip"
 }
 
 function _build() {
