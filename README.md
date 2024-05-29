@@ -2,20 +2,20 @@
 
 Lazygit repository manager, without need to open lazygit on folder
 
-Its possible to:
+## Installation
 
-- Access the repository with `lazygit`
-- Open repository
-- Clone repository
-- Create repository
-- Set/Unset `Git Credentials Helper` (To avoid insert username and password every time)
+#### Windows
 
-**Important:**
+You can download the latest version of application zip or run the following command:
 
-To use this script, you need to install `lazygit`. Click [here](https://github.com/jesseduffield/lazygit) to get more information.
+1. Install Scoop. For more information visit: https://scoop.sh
 
-During initialization, if global user information, like username and email, is not configured, it will ask for username and email.
+`scoop install https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v$APP_LATEST_VERSION/lazygit-repository-manager-win.json`
 
-## Demonstration
+## Application images
 
-![Open repository](./images/demo.gif)
+**App will open in system tray**
+![Init app](./images/tray.png)
+
+**App Configuration**
+![Configuration app](./images/configuration.png)
