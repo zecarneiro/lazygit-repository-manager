@@ -1,0 +1,7 @@
+AUTHOR=José Noronha
+NAME=lazygit-repository-manager
+DISPLAY_NAME=Lazygit Repository Manager
+ID=lazygit.repo.manager
+VERSION=3.1.0
+WIN_ICON=win-icon.ico
+LINUX_ICON=linux-icon.png

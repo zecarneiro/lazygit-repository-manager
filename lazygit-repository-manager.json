@@ -1,18 +1,15 @@
 {
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Lazygit repository management",
   "homepage": "https://github.com/zecarneiro/lazygit-repository-manager",
-  "url": "https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v3.0.3/lazygit-repository-manager-win.zip",
+  "url": "https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v3.1.0/lazygit-repository-manager-3.1.0.zip",
   "bin": "lazygit-repository-manager.exe",
-  "installer": {
-    "script": ["Invoke-Expression \"$dir\\install.ps1\""]
-  },
-  "uninstaller": {
-    "script": ["Invoke-Expression \"$dir\\uninstall.ps1\""]
-  },
+  "shortcuts": [
+        ["lazygit-repository-manager.exe", "Lazygit Repository Manager"]
+	],
   "persist": ".data",
   "checkver": "github",
   "autoupdate": {
-    "url": "https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v$version/lazygit-repository-manager-win.zip"
+    "url": "https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v$version/lazygit-repository-manager-3.1.0.zip"
   }
 }

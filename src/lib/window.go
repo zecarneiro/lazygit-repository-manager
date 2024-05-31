@@ -13,11 +13,14 @@ var (
 	formWindowSize      fyne.Size
 	directoryWindow     fyne.Window
 	directoryWindowSize fyne.Size
+	informationWindow     fyne.Window
+	informationWindowSize     fyne.Size
 )
 
 func initWindow() {
 	formWindowSize = fyne.NewSize(600, 500)
 	directoryWindowSize = fyne.NewSize(600, 500)
+	informationWindowSize = fyne.NewSize(300, 200)
 }
 
 // Directory Window and Dialog Area
@@ -26,9 +29,9 @@ func loadDirectoryWindow() {
 		directoryWindow.Close()
 		directoryWindow = nil
 	}
-	directoryWindow = application.NewWindow(APP_NAME + " - Select Repository")
+	directoryWindow = application.NewWindow(ApplicationDisplayName + " - Select Repository")
 	directoryWindow.Resize(directoryWindowSize)
-	directoryWindow.FixedSize()
+	directoryWindow.SetFixedSize(true)
 	directoryWindow.CenterOnScreen()
 }
 
@@ -55,9 +58,9 @@ func loadFormWindow() {
 		formWindow.Close()
 		formWindow = nil
 	}
-	formWindow = application.NewWindow(APP_NAME + " - Configuration")
+	formWindow = application.NewWindow(ApplicationDisplayName + " - Configuration")
 	formWindow.Resize(formWindowSize)
-	formWindow.FixedSize()
+	formWindow.SetFixedSize(true)
 	formWindow.CenterOnScreen()
 }
 
@@ -73,4 +76,29 @@ func openDialogForm(callback func(status bool), title string, items []*widget.Fo
 	dialogForm.SetOnClosed(closeFormWindow)
 	dialogForm.Show()
 	formWindow.Show()
+}
+
+func loadInformationWindow() {
+	if informationWindow != nil {
+		informationWindow.Close()
+		informationWindow = nil
+	}
+	informationWindow = application.NewWindow(ApplicationDisplayName + " - Select Repository")
+	informationWindow.Resize(informationWindowSize)
+	informationWindow.SetFixedSize(true)
+	informationWindow.CenterOnScreen()
+}
+
+func closeInformationWindow() {
+	informationWindow.Close()
+	informationWindow = nil
+}
+
+func openInformation(title string, message string) {
+	loadInformationWindow()
+	dialogInfo := dialog.NewInformation(title, message, informationWindow)
+	dialogInfo.SetOnClosed(closeInformationWindow)
+	dialogInfo.Resize(informationWindowSize)
+	dialogInfo.Show()
+	informationWindow.Show()
 }

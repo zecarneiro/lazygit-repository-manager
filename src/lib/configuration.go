@@ -52,7 +52,7 @@ func loadConfigurations() {
 	configurationDir := jnoronhautils.ResolvePath(jnoronhautils.SystemInfo().HomeDir + "/.config/")
 	jnoronhautils.CreateDirectory(configurationDir, true)
 
-	configurationFile = jnoronhautils.ResolvePath(configurationDir + "/" + APP_ID + ".json")
+	configurationFile = jnoronhautils.ResolvePath(configurationDir + "/" + ApplicationName + ".json")
 	if jnoronhautils.FileExist(configurationFile) {
 		data, err := jnoronhautils.ReadJsonFile[entity.Configuration](configurationFile)
 		if err != nil {

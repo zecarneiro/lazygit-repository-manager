@@ -20,10 +20,6 @@ var (
 
 func buildTrayMenu() {
 	repositoriesMenuItem = fyne.NewMenuItem("Repositories", func() {})
-	configurations := fyne.NewMenuItem("Configurations", func() {
-		openConfigurationsForm()
-	})
-
 	addNewRepository := fyne.NewMenuItem("Add new repository", func() {
 		openAddNewRepoForm()
 	})
@@ -33,8 +29,19 @@ func buildTrayMenu() {
 		Notify(REMOVE_IVALID_REPOSITORY_TRAY_MENU_TITLE + ", done.")
 	})
 	buildTrayRepositories(repositoriesMenuItem)
-	trayMenu = fyne.NewMenu(APP_NAME)
-	trayMenu.Items = append(trayMenu.Items, repositoriesMenuItem, addNewRepository, removeInvalidRepositories, fyne.NewMenuItemSeparator(), configurations)
+
+	configurations := fyne.NewMenuItem("Configurations", func() {
+		openConfigurationsForm()
+	})
+	about := fyne.NewMenuItem("About", func() {
+		data := "Author: " + Author
+		data += "\nRelease Date: " + ApplicationReleaseDate
+		data += "\nVersion: " + ApplicationVersion
+		openInformation(ApplicationDisplayName, data)
+	})
+
+	trayMenu = fyne.NewMenu(ApplicationDisplayName)
+	trayMenu.Items = append(trayMenu.Items, repositoriesMenuItem, addNewRepository, removeInvalidRepositories, fyne.NewMenuItemSeparator(), configurations, about)
 }
 
 func reloadRepositoryMenuItem() {
@@ -50,5 +57,5 @@ func initTray() {
 	desk = appDesk
 	buildTrayMenu()
 	desk.SetSystemTrayMenu(trayMenu)
-	desk.SetSystemTrayIcon(fyne.NewStaticResource(APP_NAME, GetIcon()))
+	desk.SetSystemTrayIcon(fyne.NewStaticResource(ApplicationDisplayName, GetIcon()))
 }

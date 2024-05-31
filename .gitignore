@@ -1,3 +1,4 @@
 release
 *.zip
 go.work.sum
+fyne-cross
