@@ -3,18 +3,15 @@ package main
 import (
 	"lazygitRepoManager/src/lib"
 
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
+	"github.com/rivo/tview"
 )
 
 var (
-	application fyne.App
+	app *tview.Application
 )
 
 func main() {
 	lib.Init()
-	application = app.NewWithID(lib.ApplicationId)
-	application.SetIcon(fyne.NewStaticResource(lib.ApplicationDisplayName, lib.GetIcon()))
-	lib.StartApp(application)
-	application.Run()
+	app = tview.NewApplication()
+	lib.StartApp(app)
 }

@@ -1,80 +1,127 @@
 package lib
 
 import (
-	"jnoronhautils"
-	"jnoronhautils/entities"
+	"github.com/zecarneiro/simpleconsoleui"
 
-	"fyne.io/fyne/v2"
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
+	"github.com/zecarneiro/golangutils"
 )
 
 var (
-	lastOpenRepo fyne.ListableURI
+	repos *tview.List
 )
 
 func isValidGitRepository(repo string) bool {
-	gitDir := jnoronhautils.ResolvePath(repo + "/.git")
-	return jnoronhautils.FileExist(gitDir)
+	gitDir := golangutils.ResolvePath(repo + "/.git")
+	return golangutils.FileExist(gitDir)
 }
 
-func buildTrayRepositories(menu *fyne.MenuItem) {
-	menu.ChildMenu = fyne.NewMenu("Repositories Items")
-	for _, repo := range config.Repositories {
-		repo = jnoronhautils.ResolvePath(repo)
-		title := repo
-		if len(title) > config.MaxCharRepoRepresentation {
-			title = jnoronhautils.GetSubstring(title, 0, config.MaxCharRepoRepresentation)
-			title += "..."
-			jnoronhautils.WarnLog("New repo representation: "+title, false)
+func processNewRepo(path string) {
+	if len(path) > 0 {
+		if !golangutils.InArray(config.Repositories, path) && isValidGitRepository(path) {
+			config.Repositories = append(config.Repositories, path)
+			updateConfigurations()
+			reloadRepos()
+			simpleconsoleui.Ok("Repo saved successfully: "+path, "", nil)
+		} else {
+			simpleconsoleui.Error("Invalid given Repo: "+path, "", nil)
 		}
-		if !jnoronhautils.FileExist(repo) {
-			title = title + " - NOT FOUND"
-		} else if !isValidGitRepository(repo) {
-			title = title + " - INVALID GIT REPOSITORY"
-		}
-		menu.ChildMenu.Items = append(menu.ChildMenu.Items, fyne.NewMenuItem(title, func() {
-			openRepository(repo)
-		}))
 	}
 }
 
-func openAddNewRepoForm() {
-	openDialogFolder(ProcessNewRepo, lastOpenRepo)
-}
-
-func removeInvalidRepositorories() {
+func removeInvalidRepositorories() []string {
+	invalidRepos := []string{}
 	newRepos := []string{}
 	for _, repo := range config.Repositories {
-		if jnoronhautils.FileExist(repo) && isValidGitRepository(repo) {
+		if golangutils.FileExist(repo) && isValidGitRepository(repo) {
 			newRepos = append(newRepos, repo)
+		} else {
+			invalidRepos = append(invalidRepos, repo)
 		}
 	}
 	config.Repositories = newRepos
 	updateConfigurations()
+	reloadRepos()
+	return invalidRepos
 }
 
 func openRepository(repo string) {
-	if !jnoronhautils.FileExist(repo) || !isValidGitRepository(repo) {
-		Notify("Invalid repository: " + repo + ". Please, run 'Remove invalid repositories'")
+	if !golangutils.FileExist(repo) || !isValidGitRepository(repo) {
+		simpleconsoleui.Error("Invalid repository: "+repo+". Please run 'Remove invalid repositories'", "", nil)
 	} else {
-		fullLazygitCmd := config.LazygitCommand + " -p '" + jnoronhautils.ResolvePath(repo) + "'"
-		cmd := entities.CommandInfo{
-			Cmd:           jnoronhautils.StringReplaceAll(config.TerminalCommand, map[string]string{COMMAND_KEY: fullLazygitCmd}),
-			UsePowerShell: false,
+		fullLazygitCmd := config.LazygitCommand + " -p '" + golangutils.ResolvePath(repo) + "'"
+		cmd := golangutils.CommandInfo{
+			Cmd: golangutils.StringReplaceAll(config.TerminalCommand, map[string]string{COMMAND_KEY: fullLazygitCmd}),
 		}
-		jnoronhautils.InfoLog("Exec: "+cmd.Cmd, false)
-		jnoronhautils.Exec(cmd)
+		if golangutils.IsWindows() {
+			cmd.UsePowerShell = false
+		} else if golangutils.IsLinux() {
+			cmd.UseBash = true
+		}
+		simpleconsoleui.PromptLog(golangutils.GetCommandToRun(golangutils.AddShellCommand(cmd)))
+		golangutils.ExecRealTimeAsync(cmd)
 	}
 }
 
-func ProcessNewRepo(uri fyne.ListableURI, err error) {
-	if err != nil {
-		jnoronhautils.ErrorLog(err.Error(), false)
-	} else if uri != nil {
-		lastOpenRepo = uri
-		if !jnoronhautils.InArray(config.Repositories, uri.Path()) {
-			config.Repositories = append(config.Repositories, uri.Path())
-			updateConfigurations()
-			reloadRepositoryMenuItem()
-		}
+/* -------------------------------------------------------------------------- */
+/*                                 VIEWS AREA                                 */
+/* -------------------------------------------------------------------------- */
+func reloadRepos() {
+	repos.Clear()
+	repos.ShowSecondaryText(false)
+	addRepos()
+}
+func addRepos() {
+	for _, repo := range config.Repositories {
+		repos.AddItem(repo, "", 0, nil)
 	}
+}
+func respositories() tview.Primitive {
+	repos = tview.NewList()
+	open := func() {
+		repo, _ := repos.GetItemText(repos.GetCurrentItem())
+		openRepository(repo)
+	}
+	deleteRepo := func()  {
+		repoSelected, _ := repos.GetItemText(repos.GetCurrentItem())
+		simpleconsoleui.Confirm("Will remove the repository: " + repoSelected, "", "", func(canContinue bool) {
+			if canContinue {
+				config.Repositories = golangutils.FilterArray(config.Repositories, func(repo string) bool {
+					return repo != repoSelected
+				})
+				updateConfigurations()
+				reloadRepos()
+			}
+		})
+	}
+	repos.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEnter {
+			open()
+		}
+		if event.Key() == tcell.KeyRune && event.Rune() == 'd' {
+			deleteRepo()
+		}
+		return event
+	})
+	repos.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if action == tview.MouseLeftDoubleClick {
+			open()
+		}
+		return action, event
+	})
+	reloadRepos()
+	return repos
+}
+func addNewRepository() tview.Primitive {
+	return simpleconsoleui.SelectTreeView(golangutils.SysInfo().HomeDir, true, false, "", processNewRepo)
+}
+func delInvalidRepositories() {
+	simpleconsoleui.Confirm("Will remove all invalid repositories", "", "", func(canContinue bool) {
+		if canContinue {
+			for _, repo := range removeInvalidRepositorories() {
+				simpleconsoleui.OkLog("Removed invalid repository: " + repo)
+			}
+		}
+	})
 }

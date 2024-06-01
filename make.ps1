@@ -5,7 +5,7 @@ param(
     [switch] $run,
     [switch] $clean,
     [switch] $release,
-    [switch] $generateScoopInstaller,
+    [switch] $generateInstaller,
     [switch] $generatePackage
 )
 
@@ -23,9 +23,8 @@ $APP_DISPLAY_NAME = ((Get-Content "$APP_INFORMATION_FILE" | findstr ^DISPLAY_NAM
 # OTHERS
 $RELEASE_DIR = "$MAKE_SCRIPT_DIR\release"
 $POWERSHELL_VENDOR_DIR = "$MAKE_SCRIPT_DIR\vendor\powershell-utils"
-$BASH_VENDOR_DIR = "$MAKE_SCRIPT_DIR\vendor\bash-utils"
-$FYNE_CROSS_DIR = "$MAKE_SCRIPT_DIR\fyne-cross"
 $BINARY = "$RELEASE_DIR\${APP_NAME}.exe"
+$BINARY_LINUX = "$RELEASE_DIR\${APP_NAME}"
 
 # IMPORT LIBS
 . "$POWERSHELL_VENDOR_DIR\MainUtils.ps1"
@@ -44,8 +43,11 @@ function _createDirectory($directory) {
     }
 }
 
-function _copyDirectory($directory, $destination) {
+function _copyDirectory($directory, $destination, $onlyFiles) {
     if ((directoryexists "$directory")) {
+        if ($onlyFiles) {
+            $directory = "$directory\*"
+        }
         Copy-Item "$directory" -Destination "$destination" -Recurse -Force
     } else {
         warnlog "Not found directory: $directory"
@@ -63,54 +65,31 @@ function _copyFile($file, $destination) {
 # ---------------------------------------------------------------------------- #
 #                                     MAIN                                     #
 # ---------------------------------------------------------------------------- #
-function _buildRelease() {
-    param(
-        [Parameter(Mandatory)]
-        [ValidateSet("windows","linux")]
-        [string] $platform
-    )
-    infolog "Build $platform app..."
-    $icon = "$APP_WIN_ICON"
-    export CGO_ENABLED=1
-    if ($platform -eq "linux") {
-        $icon = "$APP_LINUX_ICON"
-    }
-    evaladvanced "fyne-cross.exe $platform -arch=amd64 -name=`"$APP_NAME`" -app-id=`"$APP_ID`" -icon=`"/icon/$icon`" -app-version=`"$APP_VERSION`" `"$MAKE_SCRIPT_DIR\src\.`""
-}
-
 function _release() {
-    if (!(confirm "Install or run docker before, please." $true)) {
-        _exitSuccess
-    }
-    _clean
-    _buildRelease -platform "windows"
-    _buildRelease -platform "linux"
+    _build
     _generatePackage
-    _generateScoopInstaller
-    deletedirectory "$FYNE_CROSS_DIR"
 }
 
 function _build() {
+    export GOARCH=amd64
     _clean
-    evaladvanced "go build -o `"$BINARY`" `"$MAKE_SCRIPT_DIR\src\main.go`""
+
+	infolog "Build WINDOWS app..."
+    export GOOS=windows
+	go build -o "$BINARY" "$MAKE_SCRIPT_DIR\src\main.go"
+
+	infolog "Build LINUX app..."
+    export GOOS=linux
+    go build -o "$BINARY_LINUX" "$MAKE_SCRIPT_DIR\src\main.go"
     _preparePackage
 }
 
 function _preparePackage() {
     infolog "Copy necessary files..."
     $iconsDir = "$MAKE_SCRIPT_DIR\icon"
-    $vendorReleaseDir = "$RELEASE_DIR\vendor"
     $releaseDate = (Get-date -Format "dd/MM/yyyy - HH:mm:ss")
-
-    _createDirectory "$vendorReleaseDir"
-    _copyDirectory -directory "$iconsDir" -destination "$RELEASE_DIR"
-    _copyDirectory -directory "$POWERSHELL_VENDOR_DIR" -destination "$vendorReleaseDir"
-    _copyDirectory -directory "$BASH_VENDOR_DIR" -destination "$vendorReleaseDir"
-    _copyFile -file "$MAKE_SCRIPT_DIR\scripts\install.sh" -destination "$RELEASE_DIR"
-    _copyFile -file "$MAKE_SCRIPT_DIR\scripts\uninstall.sh" -destination "$RELEASE_DIR"
+    _copyDirectory -directory "$iconsDir" -destination "$RELEASE_DIR" -onlyFiles $true
     _copyFile -file "$MAKE_SCRIPT_DIR\README.md" -destination "$RELEASE_DIR"
-    _copyFile -file "$FYNE_CROSS_DIR\bin\windows-amd64\${APP_NAME}.exe" -destination "$RELEASE_DIR"
-    _copyFile -file "$FYNE_CROSS_DIR\bin\linux-amd64\src" -destination "$RELEASE_DIR\${APP_NAME}"
     _copyFile -file "$APP_INFORMATION_FILE" -destination "$RELEASE_DIR"
     writefile "$RELEASE_DIR\app-information" "`nRELEASE_DATE=${releaseDate}" -append
 }
@@ -121,33 +100,25 @@ function _generatePackage() {
     Compress-Archive "$RELEASE_DIR\*" -DestinationPath "$MAKE_SCRIPT_DIR\${APP_NAME}-${APP_VERSION}.zip" -Force
 }
 
-function _generateScoopInstaller() {
-    $data = @"
-{
-  `"version`": `"$APP_VERSION`",
-  `"description`": `"Lazygit repository management`",
-  `"homepage`": `"https://github.com/zecarneiro/lazygit-repository-manager`",
-  `"url`": `"https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v${APP_VERSION}/lazygit-repository-manager-${APP_VERSION}.zip`",
-  `"bin`": `"${APP_NAME}.exe`",
-  `"shortcuts`": [
-        [`"${APP_NAME}.exe`", `"$APP_DISPLAY_NAME`"]
-	],
-  `"persist`": `".data`",
-  `"checkver`": `"github`",
-  `"autoupdate`": {
-    `"url`": `"https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v`$version/lazygit-repository-manager-${APP_VERSION}.zip`"
-  }
-}
-"@
-    writefile "$MAKE_SCRIPT_DIR\${APP_NAME}.json" $data
+function _generateInstaller() {
+    $installerDir = "$MAKE_SCRIPT_DIR\installers"
+    $replacer = @{ "{APP_VERSION}" = "${APP_VERSION}"; "{APP_NAME}" = "${APP_NAME}"; "{APP_DISPLAY_NAME}" = "${APP_DISPLAY_NAME}"}
+
+    infolog "Generate SCOOP Installer..."
+    $scoopInstallerFile = "$installerDir\scoop.json"
+    $scoopInstallerDestFile = "$MAKE_SCRIPT_DIR\${APP_NAME}.json"
+    _copyFile "$scoopInstallerFile" "$scoopInstallerDestFile"
+    foreach ($key in $replacer.Keys) {
+        writefile "$scoopInstallerDestFile" ((Get-Content "$scoopInstallerDestFile" -Raw) -replace "$key", $($replacer.$key))
+    }
 }
 
 function _clean() {
     deletedirectory "$RELEASE_DIR"
-    deletedirectory "$FYNE_CROSS_DIR"
-    deletefile "$MAKE_SCRIPT_DIR\go.sum"
-    deletefile "$MAKE_SCRIPT_DIR\go.work.sum"
+    deletefile "$MAKE_SCRIPT_DIR\src\go.sum"
     deletefile "$MAKE_SCRIPT_DIR\${APP_NAME}-${APP_VERSION}.zip"
+    deletefile "$MAKE_SCRIPT_DIR\${APP_NAME}.json"
+    deletefile "$MAKE_SCRIPT_DIR\${APP_NAME}.sh"
 }
 
 function main() {
@@ -157,9 +128,11 @@ function main() {
         infolog "Please, restart terminal."
     } elseif ($installDependencies) {
         install_golang
-        install_cpp_c
-        evaladvanced "go install github.com/fyne-io/fyne-cross@latest"
-        evaladvanced "go install fyne.io/fyne/v2/cmd/fyne@latest"
+        evaladvanced "go clean -cache -modcache -testcache"
+        evaladvanced "go get -u github.com/rivo/tview@master"
+        evaladvanced "go get -u github.com/gdamore/tcell/v2"
+        evaladvanced "go get -u github.com/zecarneiro/golangutils"
+        evaladvanced "go get -u github.com/zecarneiro/simpleconsoleui"
         evaladvanced "go mod tidy"
         infolog "Please, restart terminal."
     } elseif ($build) {
@@ -171,8 +144,8 @@ function main() {
         _release
     } elseif ($clean) {
         _clean
-    } elseif ($generateScoopInstaller) {
-        _generateScoopInstaller
+    } elseif ($generateInstaller) {
+        _generateInstaller
     }  elseif ($generatePackage) {
         _generatePackage
     } else {

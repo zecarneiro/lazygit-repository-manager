@@ -2,11 +2,13 @@ package lib
 
 import (
 	"errors"
-	"jnoronhautils"
-	jnoronhautilsEnums "jnoronhautils/enums"
+	"fmt"
 	"strings"
 
-	"fyne.io/fyne/v2"
+	"github.com/zecarneiro/simpleconsoleui"
+
+	"github.com/rivo/tview"
+	"github.com/zecarneiro/golangutils"
 )
 
 const (
@@ -14,23 +16,33 @@ const (
 )
 
 var (
+	app     *tview.Application
+	windows []simpleconsoleui.Window
 	// Application information variables
-	Author string
+	Author                 string
 	ApplicationReleaseDate string
-	ApplicationInfoFile string
-	ApplicationName string
+	ApplicationInfoFile    string
+	ApplicationName        string
 	ApplicationDisplayName string
-	ApplicationId string
-	ApplicationVersion string
-	ApplicationIcon string
+	ApplicationId          string
+	ApplicationVersion     string
+	ApplicationIcon        string
 
 	// Others
 	executableDir string
-	application   fyne.App
 )
 
+func getIcon() []byte {
+	iconPath := golangutils.ResolvePath(executableDir + "/icon/" + ApplicationIcon)
+	return golangutils.ReadFileInByte(iconPath)
+}
+
+func setExecutableDir(dir string) {
+	executableDir = dir
+}
+
 func loadAppInformations(line string, err error) {
-	jnoronhautils.ProcessError(err)
+	golangutils.ProcessError(err)
 	if strings.HasPrefix(line, "NAME") {
 		_, after, _ := strings.Cut(line, "=")
 		ApplicationName = after
@@ -43,10 +55,10 @@ func loadAppInformations(line string, err error) {
 	} else if strings.HasPrefix(line, "VERSION") {
 		_, after, _ := strings.Cut(line, "=")
 		ApplicationVersion = after
-	} else if strings.HasPrefix(line, "WIN_ICON") && jnoronhautils.IsWindows() {
+	} else if strings.HasPrefix(line, "WIN_ICON") && golangutils.IsWindows() {
 		_, after, _ := strings.Cut(line, "=")
 		ApplicationIcon = after
-	} else if strings.HasPrefix(line, "LINUX_ICON") && jnoronhautils.IsLinux() {
+	} else if strings.HasPrefix(line, "LINUX_ICON") && golangutils.IsLinux() {
 		_, after, _ := strings.Cut(line, "=")
 		ApplicationIcon = after
 	} else if strings.HasPrefix(line, "AUTHOR") {
@@ -60,34 +72,63 @@ func loadAppInformations(line string, err error) {
 
 func validateStart() {
 	if len(ApplicationIcon) == 0 {
-		jnoronhautils.ProcessError(errors.New(jnoronhautilsEnums.INVALID_PLATFORM_MSG))
+		golangutils.ProcessError(errors.New(golangutils.INVALID_PLATFORM_MSG))
 	}
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                 VIEWS AREA                                 */
+/* -------------------------------------------------------------------------- */
+func quit() {
+	stop := func (canContinue bool) {
+		if canContinue {
+			app.Stop()
+		}
+	}
+	simpleconsoleui.Confirm("Do you want to quit the application?", "Quit", "", stop)
+}
+
+func about() tview.Primitive {
+	about := tview.NewTextView().SetText(fmt.Sprintf("Author: %s\nRelease Date: %s\nVersion: %s", Author, ApplicationReleaseDate, ApplicationVersion))
+	return about
+}
+
+func showModalErr() {
+	simpleconsoleui.Error("Error modal", "", nil)
+}
+
+func showModalInfo() {
+	simpleconsoleui.Information("Information modal", "", nil)
+}
+func showModalOk() {
+	simpleconsoleui.Ok("Ok modal", "", nil)
+}
+func showModalWarn() {
+	simpleconsoleui.Warn("Warn modal", "", nil)
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                 PUBLIC AREA                                */
+/* -------------------------------------------------------------------------- */
 func Init() {
-	executableDir = jnoronhautils.GetExecutableDir()
-	ApplicationInfoFile = jnoronhautils.ResolvePath(executableDir + "/app-information")
-	jnoronhautils.ReadFileLineByLine(ApplicationInfoFile, loadAppInformations)
+	executableDir = golangutils.GetExecutableDir()
+	ApplicationInfoFile = golangutils.ResolvePath(executableDir + "/app-information")
+	golangutils.ReadFileLineByLine(ApplicationInfoFile, loadAppInformations)
 	validateStart()
+	simpleconsoleui.InitUi(tview.Theme{})
 }
 
-func GetIcon() []byte {
-	iconPath := jnoronhautils.ResolvePath(executableDir + "/icon/" + ApplicationIcon)
-	return jnoronhautils.ReadFileInByte(iconPath)
-}
-
-func Notify(content string) {
-	notification := fyne.NewNotification(ApplicationDisplayName, content)
-	application.SendNotification(notification)
-}
-
-func SetExecutableDir(dir string) {
-	executableDir = dir
-}
-
-func StartApp(fyneApplication fyne.App) {
-	application = fyneApplication
+func StartApp(application *tview.Application) {
+	app = application
 	loadConfigurations()
-	initWindow()
-	initTray()
+	windows = []simpleconsoleui.Window{
+		{MenuName: "Repositories", MenuPage: respositories, HasLog: true},
+		{MenuName: "Add new repository", MenuPage: addNewRepository, HasLog: false},
+		{MenuName: "Remove invalid repositories", Callback: delInvalidRepositories},
+		{MenuName: "Configurations", MenuPage: configuration, HasLog: true},
+		{MenuName: "Refresh", MenuPage: nil, HasLog: false, Callback: simpleconsoleui.RefreshAndKeepOnPage},
+		{MenuName: "About", MenuPage: about},
+		{MenuName: "Quit", Callback: quit},
+	}
+	simpleconsoleui.Start(app, windows, ApplicationDisplayName, "Manage repositories for lazygit app")
 }

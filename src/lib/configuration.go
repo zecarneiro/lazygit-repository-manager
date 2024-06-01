@@ -1,12 +1,13 @@
 package lib
 
 import (
-	"jnoronhautils"
 	"lazygitRepoManager/src/entity"
-	"strconv"
 	"strings"
 
-	"fyne.io/fyne/v2/widget"
+	"github.com/zecarneiro/simpleconsoleui"
+
+	"github.com/rivo/tview"
+	"github.com/zecarneiro/golangutils"
 )
 
 const (
@@ -16,107 +17,106 @@ const (
 var (
 	config            entity.Configuration
 	configurationFile string
-
-	// Configurations Form items
-	inputTerminalCommand           *widget.Entry
-	inputLazygitCommand            *widget.Entry
-	inputMaxCharRepoRepresentation *widget.Entry
 )
 
-func loadMaxCharRepoRepresentation() {
-	if config.MaxCharRepoRepresentation == 0 {
-		config.MaxCharRepoRepresentation = 100
+func getDefaultTerminalCommand() string {
+	if golangutils.IsWindows() {
+		return "start /MAX powershell.exe -Command " + COMMAND_KEY
+	} else if golangutils.IsLinux() {
+		return "tilix --maximize -e \"" + COMMAND_KEY + "\""
 	}
+	return ""
 }
-
-func loadTerminalCommand() {
-	if len(config.TerminalCommand) == 0 {
-		if jnoronhautils.IsWindows() {
-			config.TerminalCommand = "start /MAX powershell.exe -Command " + COMMAND_KEY
-		}
+func getDefaultLazygitCommand() string {
+	if golangutils.IsWindows() {
+		return "lazygit.exe"
+	} else if golangutils.IsLinux() {
+		return "lazygit"
 	}
-}
-
-func loadLazygitCommand() {
-	if len(config.LazygitCommand) == 0 {
-		if jnoronhautils.IsWindows() {
-			config.LazygitCommand = "lazygit.exe"
-		}
-	}
+	return ""
 }
 
 func loadConfigurations() {
 	config = entity.Configuration{Repositories: []string{}, TerminalCommand: ""}
 
 	// Set Configuration Dir
-	configurationDir := jnoronhautils.ResolvePath(jnoronhautils.SystemInfo().HomeDir + "/.config/")
-	jnoronhautils.CreateDirectory(configurationDir, true)
+	configurationDir := golangutils.ResolvePath(golangutils.SysInfo().HomeDir + "/.config/")
+	golangutils.CreateDirectory(configurationDir, true)
 
-	configurationFile = jnoronhautils.ResolvePath(configurationDir + "/" + ApplicationName + ".json")
-	if jnoronhautils.FileExist(configurationFile) {
-		data, err := jnoronhautils.ReadJsonFile[entity.Configuration](configurationFile)
+	configurationFile = golangutils.ResolvePath(configurationDir + "/" + ApplicationName + ".json")
+	if golangutils.FileExist(configurationFile) {
+		data, err := golangutils.ReadJsonFile[entity.Configuration](configurationFile)
 		if err != nil {
-			jnoronhautils.ErrorLog(err.Error(), false)
+			golangutils.ErrorLog(err.Error(), false)
 		} else {
 			config = data
 		}
 	}
-	loadTerminalCommand()
-	loadLazygitCommand()
-	loadMaxCharRepoRepresentation()
-	config.Repositories = jnoronhautils.RemoveDuplicate(config.Repositories)
+	if len(config.TerminalCommand) == 0 {
+		config.TerminalCommand = getDefaultTerminalCommand()
+	}
+	if len(config.LazygitCommand) == 0 {
+		config.LazygitCommand = getDefaultLazygitCommand()
+	}
+	config.Repositories = golangutils.RemoveDuplicate(config.Repositories)
 	updateConfigurations()
 }
-
 func updateConfigurations() {
-	jnoronhautils.WriteJsonFile(configurationFile, config)
+	golangutils.WriteJsonFile(configurationFile, config)
 }
 
-func getTerminalCommandFormItem() *widget.FormItem {
-	inputTerminalCommand = widget.NewEntry()
-	inputTerminalCommand.Text = config.TerminalCommand
-	inputTerminalCommand.Show()
-	return widget.NewFormItem("Terminal Command", inputTerminalCommand)
+/* -------------------------------------------------------------------------- */
+/*                            VALIDATION FUNCS AREA                           */
+/* -------------------------------------------------------------------------- */
+func validateEmptyField(field string) bool {
+	return len(field) > 0
 }
-
-func getMaxCharRepoRepresntationFormItem() *widget.FormItem {
-	inputMaxCharRepoRepresentation = widget.NewEntry()
-	inputMaxCharRepoRepresentation.Text = strconv.Itoa(config.MaxCharRepoRepresentation)
-	inputMaxCharRepoRepresentation.Show()
-	return widget.NewFormItem("Max char repo representation", inputMaxCharRepoRepresentation)
+func validateFieldContainsCommandKey(field string) bool {
+	return strings.Contains(field, COMMAND_KEY)
 }
-
-func getLazygitCommandFormItem() *widget.FormItem {
-	inputLazygitCommand = widget.NewEntry()
-	inputLazygitCommand.Text = config.LazygitCommand
-	inputLazygitCommand.Show()
-	return widget.NewFormItem("Lazygit Command", inputLazygitCommand)
-}
-
-func openConfigurationsForm() {
-	items := []*widget.FormItem{getLazygitCommandFormItem(), getTerminalCommandFormItem(), getMaxCharRepoRepresntationFormItem()}
-	openDialogForm(ProcessConfiguration, CONFIG_RESET_MESSAGE, items)
-}
-
-func ProcessConfiguration(status bool) {
-	if status {
-		if len(inputTerminalCommand.Text) > 0 && !strings.Contains(inputTerminalCommand.Text, COMMAND_KEY) {
-			Notify("Terminal Command must contain: " + COMMAND_KEY)
-		} else {
-			config.LazygitCommand = inputLazygitCommand.Text
-			loadLazygitCommand()
-			config.TerminalCommand = inputTerminalCommand.Text
-			loadTerminalCommand()
-			value, err := strconv.Atoi(inputMaxCharRepoRepresentation.Text)
-			jnoronhautils.HasAndLogError(err)
-			oldMaxCharRepoRepresentation := config.MaxCharRepoRepresentation
-			config.MaxCharRepoRepresentation = value
-			loadMaxCharRepoRepresentation()
-			// Save configuration
-			updateConfigurations()
-			if oldMaxCharRepoRepresentation != value {
-				reloadRepositoryMenuItem()
-			}
-		}
+func validateLazygitCommandField(value string) bool {
+	if validateEmptyField(value) {
+		return true
 	}
+	simpleconsoleui.ErrorLog("Invalid Lazygit Command")
+	return false
+}
+func validateTerminalCommandField(value string) bool {
+	if validateEmptyField(value) && validateFieldContainsCommandKey(value) {
+		return true
+	}
+	simpleconsoleui.ErrorLog("Invalid Terminal Command")
+	return false
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                 VIEWS AREA                                 */
+/* -------------------------------------------------------------------------- */
+func configuration() tview.Primitive {
+	formConfig := tview.NewForm()
+	addField := func() {
+		formConfig.AddInputField("Lazygit Command", config.LazygitCommand, 0, nil, func(text string) {
+			config.LazygitCommand = text
+		})
+		formConfig.AddInputField("Terminal Command", config.TerminalCommand, 0, nil, func(text string) {
+			config.TerminalCommand = text
+		})
+	}
+	addField()
+	formConfig.AddButton("Save", func() {
+		if validateLazygitCommandField(config.LazygitCommand) && validateTerminalCommandField(config.TerminalCommand) {
+			updateConfigurations()
+			simpleconsoleui.Ok("Configuration saved successfully", "", nil)
+			simpleconsoleui.ClearLog()
+		}
+		formConfig.GetButton(0).Blur()
+	})
+	formConfig.AddButton("Set default values", func() {
+		config.LazygitCommand = getDefaultLazygitCommand()
+		config.TerminalCommand = getDefaultTerminalCommand()
+		formConfig.Clear(false)
+		addField()
+		formConfig.GetButton(1).Blur()
+	})
+	return formConfig
 }

@@ -2,3 +2,6 @@ release
 *.zip
 go.work.sum
 fyne-cross
+lazygit-repository-manager.json
+lazygit-repository-manager.sh
+go.sum

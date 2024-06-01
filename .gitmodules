@@ -1,6 +1,3 @@
-[submodule "golang-utils"]
-	path = vendor/golang-utils
-	url = https://github.com/zecarneiro/golang-utils.git
 [submodule "powershell-utils"]
 	path = vendor/powershell-utils
 	url = https://github.com/zecarneiro/powershell-utils.git
