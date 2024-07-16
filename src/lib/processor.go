@@ -80,7 +80,7 @@ func validateStart() {
 /*                                 VIEWS AREA                                 */
 /* -------------------------------------------------------------------------- */
 func quit() {
-	stop := func (canContinue bool) {
+	stop := func(canContinue bool) {
 		if canContinue {
 			app.Stop()
 		}
@@ -130,5 +130,5 @@ func StartApp(application *tview.Application) {
 		{MenuName: "About", MenuPage: about},
 		{MenuName: "Quit", Callback: quit},
 	}
-	simpleconsoleui.Start(app, windows, ApplicationDisplayName, "Manage repositories for lazygit app")
+	simpleconsoleui.Start(app, windows, ApplicationDisplayName, "Repositories manager")
 }
