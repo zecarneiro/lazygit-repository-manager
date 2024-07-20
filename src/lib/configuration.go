@@ -36,42 +36,6 @@ func getDefaultLazygitCommand() string {
 	return ""
 }
 
-func getGitCredentialsCmd(isSet bool) golangutils.CommandInfo {
-	cmd := golangutils.CommandInfo{
-		Cmd:  "git",
-		Args: []string{"config", "--global", "credential.helper"},
-	}
-	if golangutils.IsWindows() {
-		cmd.UsePowerShell = false
-	} else if golangutils.IsLinux() {
-		cmd.UseBash = true
-	}
-	if isSet {
-		cmd.Args = append(cmd.Args, "store")
-	}
-	return cmd
-}
-func getGitCredentialsStatus() bool {
-	cmd := getGitCredentialsCmd(false)
-	simpleconsoleui.PromptLog(golangutils.GetCommandToRun(golangutils.AddShellCommand(cmd)))
-	resp := golangutils.Exec(cmd)
-	return strings.Contains(resp.Data, "store")
-}
-func enableGitCredentials() {
-	cmd := getGitCredentialsCmd(true)
-	simpleconsoleui.PromptLog(golangutils.GetCommandToRun(golangutils.AddShellCommand(cmd)))
-	golangutils.ExecRealTime(cmd)
-}
-func disableGitCredentials() {
-	fileToDelete := golangutils.ResolvePath(golangutils.SysInfo().HomeDir + "/.git-credentials")
-	cmd := getGitCredentialsCmd(false)
-	cmd.Args = append(cmd.Args, "''")
-	simpleconsoleui.PromptLog(golangutils.GetCommandToRun(golangutils.AddShellCommand(cmd)))
-	golangutils.ExecRealTime(cmd)
-	simpleconsoleui.InfoLog("Delete file: " + fileToDelete)
-	golangutils.DeleteFile(fileToDelete)
-}
-
 func loadConfigurations() {
 	config = entity.Configuration{Repositories: []string{}, TerminalCommand: ""}
 
@@ -129,7 +93,6 @@ func validateTerminalCommandField(value string) bool {
 /*                                 VIEWS AREA                                 */
 /* -------------------------------------------------------------------------- */
 func configuration() tview.Primitive {
-	gitCredentialsStatus := getGitCredentialsStatus()
 	formConfig := tview.NewForm()
 	addField := func() {
 		formConfig.AddInputField("Lazygit Command", config.LazygitCommand, 0, nil, func(text string) {
@@ -138,9 +101,6 @@ func configuration() tview.Primitive {
 		formConfig.AddInputField("Terminal Command", config.TerminalCommand, 0, nil, func(text string) {
 			config.TerminalCommand = text
 		})
-		formConfig.AddCheckbox("Enable Store Git Credentials", gitCredentialsStatus, func(checked bool) {
-			gitCredentialsStatus = checked
-		})
 	}
 	addField()
 	formConfig.AddButton("Save", func() {
@@ -148,11 +108,6 @@ func configuration() tview.Primitive {
 			updateConfigurations()
 			simpleconsoleui.Ok("Configuration saved successfully", "", nil)
 			simpleconsoleui.ClearLog()
-		}
-		if gitCredentialsStatus {
-			enableGitCredentials()
-		} else {
-			disableGitCredentials()
 		}
 		formConfig.GetButton(0).Blur()
 	})

@@ -12,13 +12,13 @@ param(
 $MAKE_SCRIPT_DIR = ($PSScriptRoot)
 
 # APP INFORMATION AREA
-$APP_INFORMATION_FILE = "$MAKE_SCRIPT_DIR\app-information"
-$APP_NAME = ((Get-Content "$APP_INFORMATION_FILE" | findstr ^NAME=) -split '=')[1]
-$APP_ID = ((Get-Content "$APP_INFORMATION_FILE" | findstr ^ID=) -split '=')[1]
-$APP_VERSION = ((Get-Content "$APP_INFORMATION_FILE" | findstr ^VERSION=) -split '=')[1]
-$APP_WIN_ICON = ((Get-Content "$APP_INFORMATION_FILE" | findstr ^WIN_ICON=) -split '=')[1]
-$APP_LINUX_ICON = ((Get-Content "$APP_INFORMATION_FILE" | findstr ^LINUX_ICON=) -split '=')[1]
-$APP_DISPLAY_NAME = ((Get-Content "$APP_INFORMATION_FILE" | findstr ^DISPLAY_NAME=) -split '=')[1]
+$APP_INFORMATION_FILE = $(Resolve-Path "$MAKE_SCRIPT_DIR\app-information")
+$APP_NAME = ((Get-Content "$APP_INFORMATION_FILE" | Select-String -Pattern '^NAME=') -split '=')[1]
+$APP_ID = ((Get-Content "$APP_INFORMATION_FILE" | Select-String -Pattern '^ID=') -split '=')[1]
+$APP_VERSION = ((Get-Content "$APP_INFORMATION_FILE" | Select-String -Pattern '^VERSION=') -split '=')[1]
+$APP_WIN_ICON = ((Get-Content "$APP_INFORMATION_FILE" | Select-String -Pattern '^WIN_ICON=') -split '=')[1]
+$APP_LINUX_ICON = ((Get-Content "$APP_INFORMATION_FILE" | Select-String -Pattern '^LINUX_ICON=') -split '=')[1]
+$APP_DISPLAY_NAME = ((Get-Content "$APP_INFORMATION_FILE" | Select-String -Pattern '^DISPLAY_NAME=') -split '=')[1]
 
 # OTHERS
 $RELEASE_DIR = "$MAKE_SCRIPT_DIR\release"
@@ -101,12 +101,12 @@ function _generatePackage() {
 }
 
 function _generateInstaller() {
-    $installerDir = "$MAKE_SCRIPT_DIR\installers"
+    $installerDir = (resolvePath "$MAKE_SCRIPT_DIR\installers")
     $replacer = @{ "{APP_VERSION}" = "${APP_VERSION}"; "{APP_NAME}" = "${APP_NAME}"; "{APP_DISPLAY_NAME}" = "${APP_DISPLAY_NAME}"}
 
     infolog "Generate SCOOP Installer..."
-    $scoopInstallerFile = "$installerDir\scoop.json"
-    $scoopInstallerDestFile = "$MAKE_SCRIPT_DIR\${APP_NAME}.json"
+    $scoopInstallerFile = (resolvePath "$installerDir\scoop.json")
+    $scoopInstallerDestFile = (resolvePath "$MAKE_SCRIPT_DIR\${APP_NAME}.json")
     _copyFile "$scoopInstallerFile" "$scoopInstallerDestFile"
     foreach ($key in $replacer.Keys) {
         writefile "$scoopInstallerDestFile" ((Get-Content "$scoopInstallerDestFile" -Raw) -replace "$key", $($replacer.$key))

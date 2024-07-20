@@ -126,6 +126,7 @@ func StartApp(application *tview.Application) {
 		{MenuName: "Add new repository", MenuPage: addNewRepository, HasLog: false},
 		{MenuName: "Remove invalid repositories", Callback: delInvalidRepositories},
 		{MenuName: "Configurations", MenuPage: configuration, HasLog: true},
+		{MenuName: "Git Configurations", MenuPage: gitConfiguration, HasLog: true},
 		{MenuName: "Refresh", MenuPage: nil, HasLog: false, Callback: simpleconsoleui.RefreshAndKeepOnPage},
 		{MenuName: "About", MenuPage: about},
 		{MenuName: "Quit", Callback: quit},
