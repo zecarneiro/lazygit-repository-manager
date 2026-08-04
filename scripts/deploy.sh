@@ -1,9 +1,9 @@
 #!/bin/bash
 
-APP_NAME="$1"
-APP_VERSION="$2"
-APP_DISPLAY_NAME="$3"
-SO_TYPE="$4"
+SO_TYPE="$1"; shift
+APP_NAME="$1"; shift
+APP_VERSION="$1"; shift
+APP_DISPLAY_NAME="$*"
 ROOT_DIR="$PWD"
 RELEASE_DIR="$ROOT_DIR/release"
 DEPLOY_DIR="$ROOT_DIR/$APP_NAME"

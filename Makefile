@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 # APP Info
 NAME := lazygit-repository-manager
-APP_VERSION := 5.0.0
+APP_VERSION := 5.0.1
 DISPLAY_NAME := "Lazygit Repository Manager"
 # Make file data
 GO := go
@@ -32,7 +32,7 @@ build: check-deps
 
 deploy: check-deps
 	@cd "$(ROOT)"
-	@bash $(SCRIPTS_DIR)/deploy.sh "$(NAME)" "$(APP_VERSION)" "$(DISPLAY_NAME)" "$(SO_TYPE)"
+	@bash $(SCRIPTS_DIR)/deploy.sh "$(SO_TYPE)" "$(NAME)" "$(APP_VERSION)" "$(DISPLAY_NAME)"
 
 clean:
 	@bash $(SCRIPTS_DIR)/cleaner.sh "$(NAME)"

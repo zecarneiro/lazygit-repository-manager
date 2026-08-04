@@ -1,6 +1,6 @@
 {
   "version": "{APP_VERSION}",
-  "description": "Lazygit repository management",
+  "description": "{APP_DISPLAY_NAME}",
   "homepage": "https://github.com/zecarneiro/lazygit-repository-manager",
   "url": "https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v{APP_VERSION}/lazygit-repository-manager-{APP_VERSION}.zip",
   "bin": "{APP_NAME}.exe",
