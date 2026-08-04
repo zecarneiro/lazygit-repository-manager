@@ -1,7 +1,6 @@
 #!/bin/bash
-# AUTHOR: Jose M. Noronha
 
-declare OTHERAPPS_DIR="$HOME/.otherapps"
+declare OTHERAPPS_DIR="$HOME/.local/opt"
 declare INSTALL_DIR="$OTHERAPPS_DIR/{APP_NAME}"
 declare SHORTCUT="$HOME/.local/share/applications/{APP_NAME}.desktop"
 declare ZIP_FILE="$OTHERAPPS_DIR/lazygit-repository-manager-{APP_VERSION}.zip"
@@ -28,7 +27,7 @@ Exec=$INSTALL_DIR/{APP_NAME}
 Name={APP_DISPLAY_NAME}
 Comment={APP_DISPLAY_NAME}
 Icon=$INSTALL_DIR/linux.png"
-    
+
     # Start
     if [ ! "$(command -v wget)" ]; then
         _printError "Please install wget first"
@@ -45,7 +44,7 @@ Icon=$INSTALL_DIR/linux.png"
 
     _printInfo "Create" "$INSTALL_DIR"
     mkdir -p "$INSTALL_DIR"
-    
+
     _printInfo "Download" "{APP_DISPLAY_NAME}"
     wget -O "$ZIP_FILE" "$URL" -q --show-progress || exit 1
 
@@ -58,41 +57,6 @@ Icon=$INSTALL_DIR/linux.png"
         _printInfo "Remove" "$ZIP_FILE"
         rm "$ZIP_FILE"
     fi
-
-    # TODO: Install command on system level
-    #_printInfo "Install" "$SYMBOLIC_SYSTEM_FILE"
-    #sudo ln "$INSTALL_DIR/{APP_NAME}" "$SYMBOLIC_SYSTEM_FILE"
+    sudo ln "$INSTALL_DIR/{APP_NAME}" "$SYMBOLIC_SYSTEM_FILE"
 }
-
-function _uninstall() {
-    if [ -h "$SYMBOLIC_SYSTEM_FILE" ]; then
-        _printInfo "Remove" "$SYMBOLIC_SYSTEM_FILE"
-        sudo rm "$SYMBOLIC_SYSTEM_FILE"
-    fi
-    if [ -d "$INSTALL_DIR" ]; then
-        _printInfo "Remove" "$INSTALL_DIR"
-        rm -rf "$INSTALL_DIR"
-    fi
-    if [ -f "$SHORTCUT" ]; then
-        _printInfo "Remove" "$SHORTCUT"
-        rm "$SHORTCUT"
-    fi
-}
-
-function main() {
-    echo "Processing installation of {APP_DISPLAY_NAME}"
-    echo "1. Install"
-    echo "2. Uninstall"
-    echo "3. Exit"
-    read -p "Insert an option: " option
-    case $option in
-        1)
-            _uninstall
-            _install
-        ;;
-        2) _uninstall ;;
-        3) exit 0 ;;
-        *) echo "Invalid option!"
-    esac
-}
-main
+_install

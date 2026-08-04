@@ -5,3 +5,5 @@ fyne-cross
 lazygit-repository-manager.json
 lazygit-repository-manager.sh
 go.sum
+bin
+lazygit-repository-manager
