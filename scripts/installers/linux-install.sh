@@ -57,7 +57,7 @@ Icon=$INSTALL_DIR/linux.png"
         _printInfo "Remove" "$ZIP_FILE"
         rm "$ZIP_FILE"
     fi
-    if [ -L "$SYMBOLIC_SYSTEM_FILE" ]; then
+    if [ -f "$SYMBOLIC_SYSTEM_FILE" ]; then
         sudo rm "$SYMBOLIC_SYSTEM_FILE"
     fi
     sudo ln "$INSTALL_DIR/{APP_NAME}" "$SYMBOLIC_SYSTEM_FILE"
