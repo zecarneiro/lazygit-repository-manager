@@ -49,13 +49,16 @@ Icon=$INSTALL_DIR/linux.png"
     wget -O "$ZIP_FILE" "$URL" -q --show-progress || exit 1
 
     _printInfo "Install" "{APP_DISPLAY_NAME}"
-    unzip "$ZIP_FILE" -d "$INSTALL_DIR" || exit 1
+    unzip -o "$ZIP_FILE" -d "$INSTALL_DIR" || exit 1
     echo -e "$data" | tee "$SHORTCUT" >/dev/null
     chmod +x "$SHORTCUT" || exit 1
     chmod +x "$INSTALL_DIR/{APP_NAME}" || exit 1
     if [ -f "$ZIP_FILE" ]; then
         _printInfo "Remove" "$ZIP_FILE"
         rm "$ZIP_FILE"
+    fi
+    if [ -L "$SYMBOLIC_SYSTEM_FILE" ]; then
+        sudo rm "$SYMBOLIC_SYSTEM_FILE"
     fi
     sudo ln "$INSTALL_DIR/{APP_NAME}" "$SYMBOLIC_SYSTEM_FILE"
 }
