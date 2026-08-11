@@ -35,9 +35,8 @@ func (r *Repository) openRepository(repo string) {
 		logger.Error(fmt.Errorf(`Invalid repository: "%s". %sPlease run 'Remove invalid repositories'`, repo, common.Eol()))
 	} else {
 		logger.Info(fmt.Sprintf(`Openning repository: %s`, repo))
-		fullLazygitCmd := fmt.Sprintf(`%s`, r.configuration.Config.LazygitCommand)
 		cmdInfo := models.Command{
-			Cmd:      str.StringReplaceAll(r.configuration.Config.TerminalCommand, map[string]string{vars.COMMAND_KEY: fullLazygitCmd}),
+			Cmd:      fmt.Sprintf(`%s &`, str.StringReplaceAll(r.configuration.Config.TerminalCommand, map[string]string{vars.COMMAND_KEY: r.configuration.Config.LazygitCommand})),
 			Cwd:      repo,
 			UseShell: true,
 			Verbose:  false,
