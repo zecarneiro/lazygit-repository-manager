@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 # APP Info
 NAME := lazygit-repository-manager
-APP_VERSION := 5.0.4
+APP_VERSION := 5.0.5
 DISPLAY_NAME := "Lazygit Repository Manager"
 # Make file data
 GO := go

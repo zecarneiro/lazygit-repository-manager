@@ -23,7 +23,7 @@ function _install() {
 Version=1.0
 Type=Application
 Terminal=true
-Exec=$INSTALL_DIR/{APP_NAME}
+Exec=$SYMBOLIC_SYSTEM_FILE
 Name={APP_DISPLAY_NAME}
 Comment={APP_DISPLAY_NAME}
 Icon=$INSTALL_DIR/linux.png"
