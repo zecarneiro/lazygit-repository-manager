@@ -72,7 +72,13 @@ func (r *Repository) deleteRepo() {
 		minIndex := 1
 		maxIndex := len(configuration.Config.Repositories)
 		for {
-			userInput := console.ReadBashUserInput(fmt.Sprintf(`Insert repository to delete(%d ... %d)[PRESS ENTER TO CANCEL]: `, minIndex, maxIndex))
+			var userInput string
+			inputMsg := fmt.Sprintf(`Insert repository to delete(%d ... %d)[PRESS ENTER TO CANCEL]: `, minIndex, maxIndex)
+			if platform.IsWindows() {
+				userInput = console.ReadUserInput(inputMsg)
+			} else {
+				userInput = console.ReadBashUserInput(inputMsg)
+			}
 			if str.IsEmpty(userInput) {
 				break
 			}

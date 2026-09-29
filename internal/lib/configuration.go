@@ -73,8 +73,14 @@ func (c *Configuration) HasRepositories() bool {
 }
 
 func (c *Configuration) ChangeTerminalCommand() {
+	var userInput string
+	inputMsg := "Insert the new command[PRESS ENTER TO CANCEL]"
 	logger.Warn(fmt.Sprintf(`Keep %s, because will be replaced with lazygit command.`, vars.COMMAND_KEY))
-	userInput := console.ReadBashUserInput("Insert the new command[PRESS ENTER TO CANCEL]")
+	if platform.IsWindows() {
+		userInput = console.ReadUserInput(inputMsg)
+	} else {
+		userInput = console.ReadBashUserInput(inputMsg)
+	}
 	if !str.IsEmpty(userInput) {
 		logger.Info(fmt.Sprintf(`Inserted: %s`, userInput))
 		c.Config.TerminalCommand = userInput
@@ -83,7 +89,13 @@ func (c *Configuration) ChangeTerminalCommand() {
 }
 
 func (c *Configuration) ChangeLazygitCommand() {
-	userInput := console.ReadBashUserInput("Insert the new command[PRESS ENTER TO CANCEL]")
+	var userInput string
+	inputMsg := "Insert the new command[PRESS ENTER TO CANCEL]"
+	if platform.IsWindows() {
+		userInput = console.ReadUserInput(inputMsg)
+	} else {
+		userInput = console.ReadBashUserInput(inputMsg)
+	}
 	if !str.IsEmpty(userInput) {
 		logger.Info(fmt.Sprintf(`Inserted: %s`, userInput))
 		c.Config.LazygitCommand = userInput
