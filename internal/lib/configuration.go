@@ -27,7 +27,7 @@ func NewConfiguration() *Configuration {
 
 func (c *Configuration) getDefaultTerminalCommand() string {
 	if platform.IsWindows() {
-		return "start /MAX powershell.exe -Command " + vars.COMMAND_KEY
+		return "wt.exe powershell -Command " + vars.COMMAND_KEY
 	} else if platform.IsLinux() {
 		return "tilix --maximize -e \"" + vars.COMMAND_KEY + "\""
 	}

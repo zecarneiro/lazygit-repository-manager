@@ -37,11 +37,14 @@ func (r *Repository) openRepository(repo string) {
 	} else {
 		logger.Info(fmt.Sprintf(`Openning repository: %s`, repo))
 		cmdInfo := models.Command{
-			Cmd:      fmt.Sprintf(`%s &`, str.StringReplaceAll(r.configuration.Config.TerminalCommand, map[string]string{vars.COMMAND_KEY: r.configuration.Config.LazygitCommand})),
+			Cmd:      fmt.Sprintf(`%s`, str.StringReplaceAll(r.configuration.Config.TerminalCommand, map[string]string{vars.COMMAND_KEY: r.configuration.Config.LazygitCommand})),
 			Cwd:      repo,
 			UseShell: true,
 			Verbose:  false,
 			IsAsync:  true,
+		}
+		if !platform.IsWindows() {
+			cmdInfo.Cmd = fmt.Sprintf(`%s &`, cmdInfo.Cmd)
 		}
 		exe.Exec(cmdInfo)
 	}
