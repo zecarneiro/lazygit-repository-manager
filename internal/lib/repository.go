@@ -9,6 +9,7 @@ import (
 	"golangutils/pkg/file"
 	"golangutils/pkg/logger"
 	"golangutils/pkg/models"
+	"golangutils/pkg/platform"
 	"golangutils/pkg/slice"
 	"golangutils/pkg/str"
 	"lazygitRepoManager/internal/vars"
@@ -47,7 +48,13 @@ func (r *Repository) openRepository(repo string) {
 }
 
 func (r *Repository) addNewRepo() {
-	repoPath := console.ReadBashUserInput(fmt.Sprintf(`%s (PRESS ENTER TO IGNORE)`, "Insert path of repository"))
+	var repoPath string
+	inputMsg := fmt.Sprintf(`%s (PRESS ENTER TO IGNORE)`, "Insert path of repository")
+	if platform.IsWindows() {
+		repoPath = console.ReadUserInput(inputMsg)
+	} else {
+		repoPath = console.ReadBashUserInput(inputMsg)
+	}
 	if !str.IsEmpty(repoPath) {
 		if !slices.Contains(r.configuration.Config.Repositories, repoPath) && r.isValidGitRepository(repoPath) {
 			r.configuration.Config.Repositories = append(r.configuration.Config.Repositories, repoPath)
