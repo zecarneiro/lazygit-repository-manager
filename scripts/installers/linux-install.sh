@@ -3,9 +3,9 @@
 declare OTHERAPPS_DIR="$HOME/.local/opt"
 declare INSTALL_DIR="$OTHERAPPS_DIR/{APP_NAME}"
 declare SHORTCUT="$HOME/.local/share/applications/{APP_NAME}.desktop"
-declare ZIP_FILE="$OTHERAPPS_DIR/lazygit-repository-manager-{APP_VERSION}.zip"
+declare ZIP_FILE="$OTHERAPPS_DIR/{APP_NAME}-{APP_VERSION}.zip"
 declare SYMBOLIC_SYSTEM_FILE="/usr/bin/{APP_NAME}"
-declare URL="https://github.com/zecarneiro/lazygit-repository-manager/releases/download/v{APP_VERSION}/lazygit-repository-manager-{APP_VERSION}.zip"
+declare URL="https://github.com/zecarneiro/{APP_NAME}/releases/download/v{APP_VERSION}/{APP_NAME}-{APP_VERSION}.zip"
 
 function _printInfo() {
     local operation="$1"
@@ -18,25 +18,29 @@ function _printError() {
     echo "[ERROR] ${message}"
 }
 
+function _check_dependencies() {
+    if [ ! "$(command -v wget)" ]; then
+        _printError "Please install wget!"
+        exit 1
+    fi
+    if [ ! "$(command -v unzip)" ]; then
+        _printError "Please install unzip!"
+        exit 1
+    fi
+}
+
 function _install() {
     local data="[Desktop Entry]
 Version=1.0
 Type=Application
-Terminal=true
+Terminal=false
 Exec=$SYMBOLIC_SYSTEM_FILE
 Name={APP_DISPLAY_NAME}
 Comment={APP_DISPLAY_NAME}
 Icon=$INSTALL_DIR/linux.png"
 
     # Start
-    if [ ! "$(command -v wget)" ]; then
-        _printError "Please install wget first"
-        exit 1
-    fi
-    if [ ! "$(command -v unzip)" ]; then
-        _printError "Please install unzip first"
-        exit 1
-    fi
+    _check_dependencies
     if [ -f "$ZIP_FILE" ]; then
         _printInfo "Remove" "$ZIP_FILE"
         rm "$ZIP_FILE"
