@@ -73,7 +73,7 @@ func (c *ConfigurationData) HasRepositories() bool {
 
 func (c *ConfigurationData) ChangeTerminalCommand() {
 	bodyData := fmt.Sprintf(`Keep %s, because will be replaced with lazygit command.`, shared.COMMAND_KEY)
-	title := fmt.Sprintf(`%s - Insert the new terminal command`, shared.APP_DISPLAY_NAME)
+	title := fmt.Sprintf(`%s - Insert the new terminal command`, shared.AppDisplayName)
 	responseData := ui.Input(title, bodyData, c.Config.TerminalCommand)
 	if responseData.HasError() {
 		ui.ErrorNofity(responseData.Error.Error(), shared.GetIcon())
@@ -84,7 +84,7 @@ func (c *ConfigurationData) ChangeTerminalCommand() {
 }
 
 func (c *ConfigurationData) ChangeLazygitCommand() {
-	title := fmt.Sprintf(`%s - Insert the Lazygit command`, shared.APP_DISPLAY_NAME)
+	title := fmt.Sprintf(`%s - Insert the Lazygit command`, shared.AppDisplayName)
 	responseData := ui.Input(title, "Insert full path or the command itself", c.Config.LazygitCommand)
 	if responseData.HasError() {
 		ui.ErrorNofity(responseData.Error.Error(), shared.GetIcon())

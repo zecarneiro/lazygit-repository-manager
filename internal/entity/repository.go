@@ -30,7 +30,7 @@ func (r *Repository) isValidGitRepository(repo string) bool {
 
 func (r *Repository) OpenRepository(repo string) {
 	if !file.IsDir(repo) || !r.isValidGitRepository(repo) {
-		ui.ErrorDialog(shared.APP_DISPLAY_NAME, fmt.Sprintf(`Invalid repository: "%s"`, repo))
+		ui.ErrorDialog(shared.AppDisplayName, fmt.Sprintf(`Invalid repository: "%s"`, repo))
 	} else {
 		cmdStr := fmt.Sprintf(`%s`, str.StringReplaceAll(r.configuration.Config.TerminalCommand, map[string]string{shared.COMMAND_KEY: r.configuration.Config.LazygitCommand}))
 		cmdInfo := models.Command{
@@ -47,7 +47,7 @@ func (r *Repository) OpenRepository(repo string) {
 }
 
 func (r *Repository) AddNewRepo() {
-	repoPathData := ui.SelectFolder(fmt.Sprintf(`%s - Select repository`, shared.APP_DISPLAY_NAME))
+	repoPathData := ui.SelectFolder(fmt.Sprintf(`%s - Select repository`, shared.AppDisplayName))
 	if repoPathData.HasError() {
 		ui.ErrorNofity(repoPathData.Error.Error(), shared.GetIcon())
 	} else {
@@ -65,7 +65,7 @@ func (r *Repository) AddNewRepo() {
 
 func (r *Repository) DeleteRepo() {
 	if r.configuration.HasRepositories() {
-		selectedData := ui.MultiSelectList(shared.APP_DISPLAY_NAME, "Select one or more repository to delete:", r.configuration.Config.Repositories)
+		selectedData := ui.MultiSelectList(shared.AppDisplayName, "Select one or more repository to delete:", r.configuration.Config.Repositories)
 		if selectedData.HasError() {
 			ui.ErrorNofity(selectedData.Error.Error(), shared.GetIcon())
 		} else {
