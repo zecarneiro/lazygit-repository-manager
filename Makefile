@@ -2,14 +2,14 @@ SHELL := /bin/bash
 
 # APP Info
 NAME := lazygit-repository-manager
-APP_VERSION := 5.1.3
+APP_VERSION := 5.1.4
 DISPLAY_NAME := "Lazygit Repository Manager"
 # Make file data
 GO := go
 ROOT := $(CURDIR)
 SCRIPTS_DIR := $(ROOT)/scripts
 SO_TYPE := "linux"
-RELEASE := "1"
+RELEASE ?= "1"
 
 .PHONY: all build deploy check-deps clean help
 
