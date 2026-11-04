@@ -41,7 +41,7 @@ func (r *Repository) OpenRepository(repo string) {
 			IsAsync:    true,
 			Background: true,
 		}
-		ui.InfoNofity(fmt.Sprintf(`Openning repository: %s`, repo), shared.GetIcon())
+		shared.InfoNofity(fmt.Sprintf(`Openning repository: %s`, repo))
 		logger.Error(exe.ExecRealTime(cmdInfo))
 	}
 }
@@ -49,15 +49,15 @@ func (r *Repository) OpenRepository(repo string) {
 func (r *Repository) AddNewRepo() {
 	repoPathData := ui.SelectFolder(fmt.Sprintf(`%s - Select repository`, shared.AppDisplayName))
 	if repoPathData.HasError() {
-		ui.ErrorNofity(repoPathData.Error.Error(), shared.GetIcon())
+		shared.ErrorNofity(repoPathData.Error.Error())
 	} else {
 		if !str.IsEmpty(repoPathData.Data) {
 			if !slices.Contains(r.configuration.Config.Repositories, repoPathData.Data) && r.isValidGitRepository(repoPathData.Data) {
 				r.configuration.Config.Repositories = append(r.configuration.Config.Repositories, repoPathData.Data)
 				r.configuration.UpdateConfigurations()
-				ui.OkNofity(fmt.Sprintf(`Repo saved successfully: "%s"`, repoPathData.Data), shared.GetIcon())
+				shared.OkNofity(fmt.Sprintf(`Repo saved successfully: "%s"`, repoPathData.Data))
 			} else {
-				ui.ErrorNofity(fmt.Sprintf(`Invalid given Repo: "%s"`, repoPathData.Data), shared.GetIcon())
+				shared.ErrorNofity(fmt.Sprintf(`Invalid given Repo: "%s"`, repoPathData.Data))
 			}
 		}
 	}
@@ -67,7 +67,7 @@ func (r *Repository) DeleteRepo() {
 	if r.configuration.HasRepositories() {
 		selectedData := ui.MultiSelectList(shared.AppDisplayName, "Select one or more repository to delete:", r.configuration.Config.Repositories)
 		if selectedData.HasError() {
-			ui.ErrorNofity(selectedData.Error.Error(), shared.GetIcon())
+			shared.ErrorNofity(selectedData.Error.Error())
 		} else {
 			if len(selectedData.Data) > 0 {
 				for _, repo := range selectedData.Data {
@@ -76,14 +76,14 @@ func (r *Repository) DeleteRepo() {
 					})
 				}
 				r.configuration.UpdateConfigurations()
-				ui.OkNofity("Repo(s) deleted", shared.GetIcon())
+				shared.OkNofity("Repo(s) deleted")
 			}
 		}
 	}
 }
 
 func (r *Repository) DeleteInvalidRepo() {
-	ui.InfoNofity("Processing, delete invalid repositories...", shared.GetIcon())
+	shared.InfoNofity("Processing, delete invalid repositories...")
 	validRepos := slice.FilterArray(r.configuration.Config.Repositories, func(value string) bool {
 		return r.isValidGitRepository(value)
 	})
@@ -91,5 +91,5 @@ func (r *Repository) DeleteInvalidRepo() {
 		r.configuration.Config.Repositories = validRepos
 		r.configuration.UpdateConfigurations()
 	}
-	ui.OkNofity("Processing, delete invalid repositories, Done.", shared.GetIcon())
+	shared.OkNofity("Processing, delete invalid repositories, Done.")
 }

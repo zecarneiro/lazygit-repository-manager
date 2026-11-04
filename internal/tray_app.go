@@ -37,13 +37,13 @@ func buildGitConfigMenu(settingsMenu *systray.MenuItem) {
 	gitConfigMenuEntry.AddSubMenuItem(usernameMenu, usernameMenu).Click(func() {
 		usernameData := ui.Input(shared.AppDisplayName, "Insert Git username:", username)
 		if usernameData.HasError() {
-			ui.ErrorNofity(usernameData.Error.Error(), shared.GetIcon())
+			shared.ErrorNofity(usernameData.Error.Error())
 		} else {
 			err := exe.ExecRealTime(models.Command{Cmd: fmt.Sprintf(`%s "%s"`, usernameCmd, usernameData.Data), UseShell: true, Background: true})
 			if err != nil {
-				ui.ErrorNofity("Error on change git username", shared.GetIcon())
+				shared.ErrorNofity("Error on change git username")
 			} else {
-				ui.OkNofity("Git username changed successfully.", shared.GetIcon())
+				shared.OkNofity("Git username changed successfully.")
 				refresh(false)
 			}
 		}
@@ -51,13 +51,13 @@ func buildGitConfigMenu(settingsMenu *systray.MenuItem) {
 	gitConfigMenuEntry.AddSubMenuItem(emailMenu, emailMenu).Click(func() {
 		emailData := ui.Input(shared.AppDisplayName, "Insert Git email:", email)
 		if emailData.HasError() {
-			ui.ErrorNofity(emailData.Error.Error(), shared.GetIcon())
+			shared.ErrorNofity(emailData.Error.Error())
 		} else {
 			err := exe.ExecRealTime(models.Command{Cmd: fmt.Sprintf(`%s "%s"`, emailCmd, emailData.Data), UseShell: true, Background: true})
 			if err != nil {
-				ui.ErrorNofity("Error on change git email", shared.GetIcon())
+				shared.ErrorNofity("Error on change git email")
 			} else {
-				ui.OkNofity("Git email changed successfully.", shared.GetIcon())
+				shared.OkNofity("Git email changed successfully.")
 				refresh(false)
 			}
 		}

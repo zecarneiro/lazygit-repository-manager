@@ -76,7 +76,7 @@ func (c *ConfigurationData) ChangeTerminalCommand() {
 	title := fmt.Sprintf(`%s - Insert the new terminal command`, shared.AppDisplayName)
 	responseData := ui.Input(title, bodyData, c.Config.TerminalCommand)
 	if responseData.HasError() {
-		ui.ErrorNofity(responseData.Error.Error(), shared.GetIcon())
+		shared.ErrorNofity(responseData.Error.Error())
 	} else {
 		c.Config.TerminalCommand = responseData.Data
 		c.UpdateConfigurations()
@@ -87,7 +87,7 @@ func (c *ConfigurationData) ChangeLazygitCommand() {
 	title := fmt.Sprintf(`%s - Insert the Lazygit command`, shared.AppDisplayName)
 	responseData := ui.Input(title, "Insert full path or the command itself", c.Config.LazygitCommand)
 	if responseData.HasError() {
-		ui.ErrorNofity(responseData.Error.Error(), shared.GetIcon())
+		shared.ErrorNofity(responseData.Error.Error())
 	} else {
 		c.Config.LazygitCommand = responseData.Data
 		c.UpdateConfigurations()

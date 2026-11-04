@@ -7,6 +7,7 @@ import (
 	"golangutils/pkg/logger"
 	"golangutils/pkg/platform"
 	"golangutils/pkg/system"
+	"golangutils/pkg/ui"
 	"strings"
 )
 
@@ -55,4 +56,16 @@ func GetIcon() string {
 
 func LoadAppInformations() {
 	logger.Error(file.ReadFileLineByLine(file.JoinPath(GetExecutableDir(), "APP_INFO.conf"), loadAppInformations))
+}
+
+func ErrorNofity(message string) {
+	logger.Error(ui.ErrorNofity(AppDisplayName, message, GetIcon()))
+}
+
+func OkNofity(message string) {
+	logger.Error(ui.OkNofity(AppDisplayName, message, GetIcon()))
+}
+
+func InfoNofity(message string) {
+	logger.Error(ui.InfoNofity(AppDisplayName, message, GetIcon()))
 }
